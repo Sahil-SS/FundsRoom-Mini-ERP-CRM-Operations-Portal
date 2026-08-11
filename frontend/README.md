@@ -492,122 +492,160 @@ Challan List
 
 The project follows a feature-oriented Next.js structure.
 
-``` text
-frontend/
-│
-├── public/
-│   └── ...
-│
-├── src/
-│   │
-│   ├── app/
-│   │   │
-│   │   ├── login/
-│   │   │   └── page.tsx
-│   │   │
-│   │   ├── (dashboard)/
-│   │   │   │
-│   │   │   ├── layout.tsx
-│   │   │   │
-│   │   │   ├── dashboard/
-│   │   │   │   └── page.tsx
-│   │   │   │
-│   │   │   ├── customers/
-│   │   │   │   ├── page.tsx
-│   │   │   │   ├── new/
-│   │   │   │   │   └── page.tsx
-│   │   │   │   └── [id]/
-│   │   │   │       ├── page.tsx
-│   │   │   │       └── edit/
-│   │   │   │           └── page.tsx
-│   │   │   │
-│   │   │   ├── products/
-│   │   │   │   ├── page.tsx
-│   │   │   │   ├── new/
-│   │   │   │   │   └── page.tsx
-│   │   │   │   └── [id]/
-│   │   │   │       └── edit/
-│   │   │   │           └── page.tsx
-│   │   │   │
-│   │   │   ├── inventory/
-│   │   │   │   └── page.tsx
-│   │   │   │
-│   │   │   └── challans/
-│   │   │       ├── page.tsx
-│   │   │       ├── new/
-│   │   │       │   └── page.tsx
-│   │   │       └── [id]/
-│   │   │           └── page.tsx
-│   │   │
-│   │   └── layout.tsx
-│   │
-│   ├── components/
-│   │   │
-│   │   ├── auth/
-│   │   │   └── LoginForm.tsx
-│   │   │
-│   │   ├── customers/
-│   │   │   ├── CustomerDetails.tsx
-│   │   │   ├── FollowUpForm.tsx
-│   │   │   └── FollowUpTimeline.tsx
-│   │   │
-│   │   ├── dashboard/
-│   │   │   ├── SummaryCard.tsx
-│   │   │   ├── CustomerSummary.tsx
-│   │   │   ├── ChallanSummary.tsx
-│   │   │   └── LowStockAlert.tsx
-│   │   │
-│   │   ├── challans/
-│   │   │   ├── ChallanActions.tsx
-│   │   │   ├── ChallanDetails.tsx
-│   │   │   └── ...
-│   │   │
-│   │   ├── layout/
-│   │   │   ├── Sidebar.tsx
-│   │   │   ├── Header.tsx
-│   │   │   └── PageContainer.tsx
-│   │   │
-│   │   └── ui/
-│   │       ├── button.tsx
-│   │       └── ...
-│   │
-│   ├── hooks/
-│   │   ├── useAuth.ts
-│   │   ├── useCustomers.ts
-│   │   ├── useProducts.ts
-│   │   ├── useInventory.ts
-│   │   ├── useChallans.ts
-│   │   └── useDashboard.ts
-│   │
-│   ├── lib/
-│   │   ├── api/
-│   │   │   └── ...
-│   │   │
-│   │   ├── pdf/
-│   │   │   └── challanPdf.ts
-│   │   │
-│   │   └── utils.ts
-│   │
-│   ├── types/
-│   │   ├── auth.ts
-│   │   ├── customer.ts
-│   │   ├── product.ts
-│   │   ├── inventory.ts
-│   │   ├── challan.ts
-│   │   └── dashboard.ts
-│   │
-│   └── ...
-│
-├── .env.local
-├── .env.example
-├── .gitignore
-├── components.json
-├── next.config.ts
-├── package.json
-├── postcss.config.mjs
-├── tailwind.config.ts
-├── tsconfig.json
-└── README.md
+
+```
+├── 📁 public
+│   ├── 🖼️ file.svg
+│   ├── 🖼️ globe.svg
+│   ├── 🖼️ next.svg
+│   ├── 🖼️ vercel.svg
+│   └── 🖼️ window.svg
+├── 📁 src
+│   ├── 📁 app
+│   │   ├── 📁 (dashboard)
+│   │   │   ├── 📁 challans
+│   │   │   │   ├── 📁 [id]
+│   │   │   │   │   └── 📄 page.tsx
+│   │   │   │   ├── 📁 new
+│   │   │   │   │   └── 📄 page.tsx
+│   │   │   │   └── 📄 page.tsx
+│   │   │   ├── 📁 customers
+│   │   │   │   ├── 📁 [id]
+│   │   │   │   │   ├── 📁 edit
+│   │   │   │   │   │   └── 📄 page.tsx
+│   │   │   │   │   └── 📄 page.tsx
+│   │   │   │   ├── 📁 new
+│   │   │   │   │   └── 📄 page.tsx
+│   │   │   │   └── 📄 page.tsx
+│   │   │   ├── 📁 dashboard
+│   │   │   │   └── 📄 page.tsx
+│   │   │   ├── 📁 inventory
+│   │   │   │   └── 📄 page.tsx
+│   │   │   ├── 📁 products
+│   │   │   │   ├── 📁 [id]
+│   │   │   │   │   ├── 📁 edit
+│   │   │   │   │   │   └── 📄 page.tsx
+│   │   │   │   │   └── 📄 page.tsx
+│   │   │   │   ├── 📁 new
+│   │   │   │   │   └── 📄 page.tsx
+│   │   │   │   └── 📄 page.tsx
+│   │   │   └── 📄 layout.tsx
+│   │   ├── 📁 login
+│   │   │   └── 📄 page.tsx
+│   │   ├── 📄 favicon.ico
+│   │   ├── 🎨 globals.css
+│   │   ├── 📄 layout.tsx
+│   │   └── 📄 page.tsx
+│   ├── 📁 components
+│   │   ├── 📁 auth
+│   │   │   └── 📄 LoginForm.tsx
+│   │   ├── 📁 challans
+│   │   │   ├── 📄 ChallanActions.tsx
+│   │   │   ├── 📄 ChallanDetails.tsx
+│   │   │   ├── 📄 ChallanFilters.tsx
+│   │   │   ├── 📄 ChallanForm.tsx
+│   │   │   ├── 📄 ChallanItems.tsx
+│   │   │   ├── 📄 ChallanStatusBadge.tsx
+│   │   │   └── 📄 ChallanTable.tsx
+│   │   ├── 📁 common
+│   │   │   ├── 📄 Pagination.tsx
+│   │   │   └── 📄 StatusBadge.tsx
+│   │   ├── 📁 customers
+│   │   │   ├── 📄 CustomerDetails.tsx
+│   │   │   ├── 📄 CustomerFilters.tsx
+│   │   │   ├── 📄 CustomerForm.tsx
+│   │   │   ├── 📄 CustomerTable.tsx
+│   │   │   ├── 📄 FollowUpForm.tsx
+│   │   │   └── 📄 FollowUpTimeline.tsx
+│   │   ├── 📁 dashboard
+│   │   │   ├── 📄 ChallanSummary.tsx
+│   │   │   ├── 📄 CustomerSummary.tsx
+│   │   │   ├── 📄 LowStockAlert.tsx
+│   │   │   └── 📄 SummaryCard.tsx
+│   │   ├── 📁 inventory
+│   │   │   ├── 📄 CurrentInventoryTable.tsx
+│   │   │   ├── 📄 InventoryFilters.tsx
+│   │   │   ├── 📄 InventorySummary.tsx
+│   │   │   ├── 📄 InventoryTable.tsx
+│   │   │   ├── 📄 MovementTable.tsx
+│   │   │   ├── 📄 MovementTypeBadge.tsx
+│   │   │   └── 📄 StockMovementForm.tsx
+│   │   ├── 📁 layout
+│   │   │   ├── 📄 Header.tsx
+│   │   │   ├── 📄 MobileNav.tsx
+│   │   │   ├── 📄 PageContainer.tsx
+│   │   │   ├── 📄 Sidebar.tsx
+│   │   │   └── 📄 UserMenu.tsx
+│   │   ├── 📁 products
+│   │   │   ├── 📄 ProductFilters.tsx
+│   │   │   ├── 📄 ProductForm.tsx
+│   │   │   ├── 📄 ProductStockBadge.tsx
+│   │   │   └── 📄 ProductTable.tsx
+│   │   └── 📁 ui
+│   │       ├── 📄 alert-dialog.tsx
+│   │       ├── 📄 badge.tsx
+│   │       ├── 📄 button.tsx
+│   │       ├── 📄 card.tsx
+│   │       ├── 📄 dialog.tsx
+│   │       ├── 📄 dropdown-menu.tsx
+│   │       ├── 📄 input.tsx
+│   │       ├── 📄 select.tsx
+│   │       ├── 📄 separator.tsx
+│   │       ├── 📄 sheet.tsx
+│   │       ├── 📄 skeleton.tsx
+│   │       ├── 📄 table.tsx
+│   │       ├── 📄 tabs.tsx
+│   │       └── 📄 textarea.tsx
+│   ├── 📁 hooks
+│   │   ├── 📄 useAuth.ts
+│   │   ├── 📄 useChallans.ts
+│   │   ├── 📄 useCustomers.ts
+│   │   ├── 📄 useDashboard.ts
+│   │   ├── 📄 useInventory.ts
+│   │   └── 📄 useProducts.ts
+│   ├── 📁 lib
+│   │   ├── 📁 api
+│   │   │   ├── 📄 auth.ts
+│   │   │   ├── 📄 challans.ts
+│   │   │   ├── 📄 client.ts
+│   │   │   ├── 📄 customers.ts
+│   │   │   ├── 📄 dashboard.ts
+│   │   │   ├── 📄 inventory.ts
+│   │   │   └── 📄 products.ts
+│   │   ├── 📁 auth
+│   │   │   ├── 📄 permissions.ts
+│   │   │   └── 📄 storage.ts
+│   │   ├── 📁 pdf
+│   │   │   └── 📄 challanPdf.ts
+│   │   ├── 📁 query
+│   │   │   └── 📄 queryKeys.ts
+│   │   └── 📄 utils.ts
+│   ├── 📁 providers
+│   │   ├── 📄 AuthProvider.tsx
+│   │   └── 📄 QueryProvider.tsx
+│   ├── 📁 schemas
+│   │   ├── 📄 challan.schema.ts
+│   │   ├── 📄 customer.schema.ts
+│   │   ├── 📄 inventory.schema.ts
+│   │   └── 📄 product.schema.ts
+│   └── 📁 types
+│       ├── 📄 auth.ts
+│       ├── 📄 challan.ts
+│       ├── 📄 customer.ts
+│       ├── 📄 dashboard.ts
+│       ├── 📄 inventory.ts
+│       └── 📄 product.ts
+├── ⚙️ .gitignore
+├── 📝 AGENTS.md
+├── 📝 CLAUDE.md
+├── 📝 README.md
+├── ⚙️ components.json
+├── 📄 eslint.config.mjs
+├── 📄 next.config.ts
+├── ⚙️ package-lock.json
+├── ⚙️ package.json
+├── 📄 postcss.config.mjs
+└── ⚙️ tsconfig.json
 ```
 
 > The exact generated files can vary slightly depending on the
