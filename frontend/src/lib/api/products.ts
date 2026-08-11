@@ -6,6 +6,8 @@ import type {
   ProductListResponse,
 } from "@/types/product";
 
+import type { ProductFormValues } from "@/schemas/product.schema";
+
 export const productsApi = {
   getAll: async (
     params: ProductListParams = {},
@@ -22,6 +24,27 @@ export const productsApi = {
       success: boolean;
       data: Product;
     }>(`/products/${id}`);
+
+    return response.data.data;
+  },
+
+  create: async (payload: ProductFormValues): Promise<Product> => {
+    const response = await apiClient.post<{
+      success: boolean;
+      data: Product;
+    }>("/products", payload);
+
+    return response.data.data;
+  },
+
+  update: async (
+    id: string,
+    payload: Partial<ProductFormValues>,
+  ): Promise<Product> => {
+    const response = await apiClient.put<{
+      success: boolean;
+      data: Product;
+    }>(`/products/${id}`, payload);
 
     return response.data.data;
   },
