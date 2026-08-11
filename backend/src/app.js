@@ -12,6 +12,7 @@ const followUpRoutes = require("./routes/followup.routes");
 const productRoutes = require("./routes/product.routes");
 const inventoryRoutes = require("./routes/inventory.routes");
 const challanRoutes = require("./routes/challan.routes");
+const dashboardRoutes = require("./routes/dashboard.routes");
 
 const app = express();
 
@@ -38,6 +39,7 @@ app.use("/api", followUpRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/inventory", inventoryRoutes);
 app.use("/api/challans", challanRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 
 // Health check
 app.get("/api/health", (req, res) => {
