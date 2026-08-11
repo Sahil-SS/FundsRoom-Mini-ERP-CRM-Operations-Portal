@@ -7,6 +7,7 @@ const env = require("./config/env");
 const authRoutes = require("./routes/auth.routes");
 const errorHandler = require("./middleware/error.middleware");
 const testRoutes = require("./routes/test.routes");
+const customerRoutes = require("./routes/customer.routes");
 
 const app = express();
 
@@ -28,6 +29,7 @@ app.use(express.urlencoded({ extended: true }));
 // API routes
 app.use("/api/auth", authRoutes);
 app.use("/api/test", testRoutes);
+app.use("/api/customers", customerRoutes);
 
 // Health check
 app.get("/api/health", (req, res) => {
