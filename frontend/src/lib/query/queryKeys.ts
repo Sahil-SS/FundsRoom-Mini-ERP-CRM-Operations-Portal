@@ -26,6 +26,12 @@ export const queryKeys = {
 
   inventory: {
     all: ["inventory"] as const,
+
+    list: (params: Record<string, unknown>) =>
+      ["inventory", "list", params] as const,
+
+    product: (productId: string) =>
+      ["inventory", "product", productId] as const,
   },
 
   challans: {
