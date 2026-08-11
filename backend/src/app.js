@@ -4,6 +4,9 @@ const helmet = require("helmet");
 
 const env = require("./config/env");
 
+const authRoutes = require("./routes/auth.routes");
+const errorHandler = require("./middleware/error.middleware");
+
 const app = express();
 
 // Security middleware
@@ -21,6 +24,9 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// API routes
+app.use("/api/auth", authRoutes);
+
 // Health check
 app.get("/api/health", (req, res) => {
   res.status(200).json({
@@ -29,5 +35,8 @@ app.get("/api/health", (req, res) => {
     environment: env.nodeEnv,
   });
 });
+
+// Global error handler
+app.use(errorHandler);
 
 module.exports = app;
