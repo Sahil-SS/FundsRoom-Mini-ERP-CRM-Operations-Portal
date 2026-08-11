@@ -64,6 +64,13 @@ const createCustomerSchema = z.object({
     .or(z.literal("")),
 });
 
+const updateCustomerSchema = createCustomerSchema
+  .partial()
+  .refine((data) => Object.keys(data).length > 0, {
+    message: "At least one field is required for update",
+  });
+
 module.exports = {
   createCustomerSchema,
+  updateCustomerSchema,
 };

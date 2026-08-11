@@ -19,6 +19,7 @@ const createCustomer = async (req, res, next) => {
 const getCustomers = async (req, res, next) => {
   try {
     const page = Math.max(Number(req.query.page) || 1, 1);
+
     const limit = Math.min(Math.max(Number(req.query.limit) || 10, 1), 100);
 
     const { search, status, type } = req.query;
@@ -41,7 +42,38 @@ const getCustomers = async (req, res, next) => {
   }
 };
 
+const getCustomerById = async (req, res, next) => {
+  try {
+    const customer = await customerService.getCustomerById(req.params.id);
+
+    return res.status(200).json({
+      success: true,
+      data: customer,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const updateCustomer = async (req, res, next) => {
+  try {
+    const customer = await customerService.updateCustomer(
+      req.params.id,
+      req.body,
+    );
+
+    return res.status(200).json({
+      success: true,
+      data: customer,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createCustomer,
   getCustomers,
+  getCustomerById,
+  updateCustomer,
 };

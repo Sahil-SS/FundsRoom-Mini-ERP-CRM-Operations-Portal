@@ -4,7 +4,10 @@ const customerController = require("../controllers/customer.controller");
 
 const validate = require("../middleware/validation.middleware");
 
-const { createCustomerSchema } = require("../validators/customer.validator");
+const {
+  createCustomerSchema,
+  updateCustomerSchema,
+} = require("../validators/customer.validator");
 
 const { authenticateToken } = require("../middleware/auth.middleware");
 
@@ -27,6 +30,23 @@ router.get(
   authenticateToken,
   requireRole("ADMIN", "SALES", "WAREHOUSE", "ACCOUNTS"),
   customerController.getCustomers,
+);
+
+// Get customer details
+router.get(
+  "/:id",
+  authenticateToken,
+  requireRole("ADMIN", "SALES", "WAREHOUSE", "ACCOUNTS"),
+  customerController.getCustomerById,
+);
+
+// Update customer
+router.put(
+  "/:id",
+  authenticateToken,
+  requireRole("ADMIN", "SALES"),
+  validate(updateCustomerSchema),
+  customerController.updateCustomer,
 );
 
 module.exports = router;

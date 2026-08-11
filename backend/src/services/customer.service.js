@@ -27,7 +27,6 @@ const getCustomers = async ({ page = 1, limit = 10, search, status, type }) => {
 
   const where = {};
 
-  // Search by customer name, mobile, email or business name
   if (search) {
     where.OR = [
       {
@@ -91,7 +90,109 @@ const getCustomers = async ({ page = 1, limit = 10, search, status, type }) => {
   };
 };
 
+const getCustomerById = async (customerId) => {
+  const customer = await prisma.customer.findUnique({
+    where: {
+      id: customerId,
+    },
+    include: {
+      followUps: {
+        orderBy: {
+          followUpDate: "desc",
+        },
+      },
+      challans: {
+        select: {
+          id: true,
+          challanNumber: true,
+          status: true,
+          totalQuantity: true,
+          createdAt: true,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      },
+    },
+  });
+
+  if (!customer) {
+    const error = new Error("Customer not found");
+    error.statusCode = 404;
+    throw error;
+  }
+
+  return customer;
+};
+
+const updateCustomer = async (customerId, customerData) => {
+  const existingCustomer = await prisma.customer.findUnique({
+    where: {
+      id: customerId,
+    },
+  });
+
+  if (!existingCustomer) {
+    const error = new Error("Customer not found");
+    error.statusCode = 404;
+    throw error;
+  }
+
+  const customer = await prisma.customer.update({
+    where: {
+      id: customerId,
+    },
+    data: {
+      ...(customerData.name !== undefined && {
+        name: customerData.name,
+      }),
+
+      ...(customerData.mobile !== undefined && {
+        mobile: customerData.mobile,
+      }),
+
+      ...(customerData.email !== undefined && {
+        email: customerData.email || null,
+      }),
+
+      ...(customerData.businessName !== undefined && {
+        businessName: customerData.businessName || null,
+      }),
+
+      ...(customerData.gstNumber !== undefined && {
+        gstNumber: customerData.gstNumber || null,
+      }),
+
+      ...(customerData.type !== undefined && {
+        type: customerData.type,
+      }),
+
+      ...(customerData.address !== undefined && {
+        address: customerData.address || null,
+      }),
+
+      ...(customerData.status !== undefined && {
+        status: customerData.status,
+      }),
+
+      ...(customerData.followUpDate !== undefined && {
+        followUpDate: customerData.followUpDate
+          ? new Date(customerData.followUpDate)
+          : null,
+      }),
+
+      ...(customerData.notes !== undefined && {
+        notes: customerData.notes || null,
+      }),
+    },
+  });
+
+  return customer;
+};
+
 module.exports = {
   createCustomer,
   getCustomers,
+  getCustomerById,
+  updateCustomer,
 };
