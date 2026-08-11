@@ -10,6 +10,7 @@ const testRoutes = require("./routes/test.routes");
 const customerRoutes = require("./routes/customer.routes");
 const followUpRoutes = require("./routes/followup.routes");
 const productRoutes = require("./routes/product.routes");
+const inventoryRoutes = require("./routes/inventory.routes");
 
 const app = express();
 
@@ -34,6 +35,7 @@ app.use("/api/test", testRoutes);
 app.use("/api/customers", customerRoutes);
 app.use("/api", followUpRoutes);
 app.use("/api/products", productRoutes);
+app.use("/api/inventory", inventoryRoutes);
 
 // Health check
 app.get("/api/health", (req, res) => {
