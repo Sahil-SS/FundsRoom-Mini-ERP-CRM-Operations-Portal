@@ -29,6 +29,14 @@ router.get(
   challanController.getChallans,
 );
 
+// Confirm challan
+router.post(
+  "/:id/confirm",
+  authenticateToken,
+  requireRole("ADMIN", "SALES"),
+  challanController.confirmChallan,
+);
+
 // Get challan details
 router.get(
   "/:id",

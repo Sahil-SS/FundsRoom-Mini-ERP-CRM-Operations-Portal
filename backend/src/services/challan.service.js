@@ -228,8 +228,116 @@ const getChallanById = async (challanId) => {
   };
 };
 
+const confirmChallan = async (challanId, userId) => {
+  const result = await prisma.$transaction(async (tx) => {
+    const challan = await tx.challan.findUnique({
+      where: {
+        id: challanId,
+      },
+      include: {
+        items: true,
+      },
+    });
+
+    if (!challan) {
+      const error = new Error("Challan not found");
+      error.statusCode = 404;
+      throw error;
+    }
+
+    if (challan.status !== "DRAFT") {
+      const error = new Error(
+        `Only DRAFT challans can be confirmed. Current status: ${challan.status}`,
+      );
+
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const productIds = challan.items.map((item) => item.productId);
+
+    const products = await tx.product.findMany({
+      where: {
+        id: {
+          in: productIds,
+        },
+      },
+    });
+
+    if (products.length !== productIds.length) {
+      const error = new Error(
+        "One or more products in the challan no longer exist",
+      );
+
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const productMap = new Map(
+      products.map((product) => [product.id, product]),
+    );
+
+    // Check stock for every item BEFORE changing anything
+    for (const item of challan.items) {
+      const product = productMap.get(item.productId);
+
+      if (product.currentStock < item.quantity) {
+        const error = new Error(
+          `Insufficient stock for ${product.name}. Available: ${product.currentStock}, Required: ${item.quantity}`,
+        );
+
+        error.statusCode = 400;
+        throw error;
+      }
+    }
+
+    // All stock is available.
+    // Now update stock and create movement records.
+    for (const item of challan.items) {
+      const product = productMap.get(item.productId);
+
+      await tx.product.update({
+        where: {
+          id: product.id,
+        },
+        data: {
+          currentStock: product.currentStock - item.quantity,
+        },
+      });
+
+      await tx.stockMovement.create({
+        data: {
+          productId: product.id,
+          quantity: item.quantity,
+          type: "OUT",
+          reason: `Challan ${challan.challanNumber}`,
+          createdById: userId,
+        },
+      });
+    }
+
+    const confirmedChallan = await tx.challan.update({
+      where: {
+        id: challan.id,
+      },
+      data: {
+        status: "CONFIRMED",
+      },
+      include: {
+        customer: true,
+        items: true,
+      },
+    });
+
+    return confirmedChallan;
+  });
+
+  return result;
+};
+
 module.exports = {
   createChallan,
   getChallans,
   getChallanById,
+  confirmChallan,
 };
