@@ -5,7 +5,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { customersApi } from "@/lib/api/customers";
 import { queryKeys } from "@/lib/query/queryKeys";
 
-import type { CustomerListParams } from "@/types/customer";
+import type {
+  CustomerListParams,
+  CreateFollowUpPayload,
+} from "@/types/customer";
 
 import type { CustomerFormValues } from "@/schemas/customer.schema";
 
@@ -21,6 +24,18 @@ export function useCustomer(id: string) {
   return useQuery({
     queryKey: queryKeys.customers.detail(id),
     queryFn: () => customersApi.getById(id),
+    enabled: Boolean(id),
+  });
+}
+
+export function useCustomerFollowUps(id: string) {
+  return useQuery({
+    queryKey: ["customers", "followUps", id] as const,
+    queryFn: async () => {
+      const response = await customersApi.getFollowUps(id);
+
+      return response.data;
+    },
     enabled: Boolean(id),
   });
 }
@@ -66,6 +81,30 @@ export function useUpdateCustomer() {
 
       queryClient.invalidateQueries({
         queryKey: queryKeys.dashboard.summary,
+      });
+    },
+  });
+}
+
+export function useCreateFollowUp() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      id,
+      payload,
+    }: {
+      id: string;
+      payload: CreateFollowUpPayload;
+    }) => customersApi.createFollowUp(id, payload),
+
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ["customers", "followUps", variables.id] as const,
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.customers.detail(variables.id),
       });
     },
   });
