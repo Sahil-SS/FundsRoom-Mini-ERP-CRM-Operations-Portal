@@ -335,9 +335,117 @@ const confirmChallan = async (challanId, userId) => {
   return result;
 };
 
+const cancelChallan = async (challanId, userId) => {
+  const result = await prisma.$transaction(async (tx) => {
+    const challan = await tx.challan.findUnique({
+      where: {
+        id: challanId,
+      },
+      include: {
+        items: true,
+      },
+    });
+
+    if (!challan) {
+      const error = new Error("Challan not found");
+      error.statusCode = 404;
+      throw error;
+    }
+
+    if (challan.status === "CANCELLED") {
+      const error = new Error("Challan is already cancelled");
+      error.statusCode = 400;
+      throw error;
+    }
+
+    if (challan.status === "DRAFT") {
+      const cancelledChallan = await tx.challan.update({
+        where: {
+          id: challan.id,
+        },
+        data: {
+          status: "CANCELLED",
+        },
+        include: {
+          customer: true,
+          items: true,
+        },
+      });
+
+      return cancelledChallan;
+    }
+
+    // At this point the challan is CONFIRMED.
+    // Restore the stock for every item.
+    const productIds = challan.items.map((item) => item.productId);
+
+    const products = await tx.product.findMany({
+      where: {
+        id: {
+          in: productIds,
+        },
+      },
+    });
+
+    if (products.length !== productIds.length) {
+      const error = new Error(
+        "One or more products in the challan no longer exist",
+      );
+
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const productMap = new Map(
+      products.map((product) => [product.id, product]),
+    );
+
+    for (const item of challan.items) {
+      const product = productMap.get(item.productId);
+
+      await tx.product.update({
+        where: {
+          id: product.id,
+        },
+        data: {
+          currentStock: product.currentStock + item.quantity,
+        },
+      });
+
+      await tx.stockMovement.create({
+        data: {
+          productId: product.id,
+          quantity: item.quantity,
+          type: "IN",
+          reason: `Cancellation of challan ${challan.challanNumber}`,
+          createdById: userId,
+        },
+      });
+    }
+
+    const cancelledChallan = await tx.challan.update({
+      where: {
+        id: challan.id,
+      },
+      data: {
+        status: "CANCELLED",
+      },
+      include: {
+        customer: true,
+        items: true,
+      },
+    });
+
+    return cancelledChallan;
+  });
+
+  return result;
+};
+
 module.exports = {
   createChallan,
   getChallans,
   getChallanById,
   confirmChallan,
+  cancelChallan,
 };

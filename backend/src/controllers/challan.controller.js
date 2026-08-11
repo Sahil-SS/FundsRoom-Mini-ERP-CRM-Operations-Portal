@@ -67,9 +67,26 @@ const confirmChallan = async (req, res, next) => {
   }
 };
 
+const cancelChallan = async (req, res, next) => {
+  try {
+    const challan = await challanService.cancelChallan(
+      req.params.id,
+      req.user.id,
+    );
+
+    return res.status(200).json({
+      success: true,
+      data: challan,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createChallan,
   getChallans,
   getChallanById,
   confirmChallan,
+  cancelChallan,
 };

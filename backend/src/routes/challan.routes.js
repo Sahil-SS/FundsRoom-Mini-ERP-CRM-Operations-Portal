@@ -45,4 +45,12 @@ router.get(
   challanController.getChallanById,
 );
 
+// Cancel challan
+router.post(
+  "/:id/cancel",
+  authenticateToken,
+  requireRole("ADMIN", "SALES"),
+  challanController.cancelChallan,
+);
+
 module.exports = router;
