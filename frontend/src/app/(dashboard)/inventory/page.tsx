@@ -1,42 +1,43 @@
 "use client";
 
-import { ArrowDownUp, RefreshCw, Warehouse } from "lucide-react";
+import { ArrowDownUp, Plus, RefreshCw, Warehouse } from "lucide-react";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import PageContainer from "@/components/layout/PageContainer";
 
 import CurrentInventoryTable from "@/components/inventory/CurrentInventoryTable";
 import InventoryFilters from "@/components/inventory/InventoryFilters";
 import MovementTable from "@/components/inventory/MovementTable";
+import StockMovementForm from "@/components/inventory/StockMovementForm";
 
 import Pagination from "@/components/common/Pagination";
 
 import { Button } from "@/components/ui/button";
 
-import { useInventory } from "@/hooks/useInventory";
+import { useAuth } from "@/hooks/useAuth";
+
+import { useInventory, useCreateStockMovement } from "@/hooks/useInventory";
 
 import { useProducts } from "@/hooks/useProducts";
 
 import type { MovementType } from "@/types/inventory";
 
+import type { StockMovementFormValues } from "@/schemas/inventory.schema";
+
 const LIMIT = 10;
 
 export default function InventoryPage() {
+  const { user } = useAuth();
+
   const [productId, setProductId] = useState("ALL");
 
   const [type, setType] = useState<"ALL" | MovementType>("ALL");
 
   const [page, setPage] = useState(1);
 
-  /*
-   * Product list
-   *
-   * The Products API supports pagination.
-   * We fetch the first 100 products so that
-   * the inventory page can display the current
-   * inventory and populate the product filter.
-   */
+  const [showMovementForm, setShowMovementForm] = useState(false);
+
   const {
     data: productData,
     isLoading: productsLoading,
@@ -50,19 +51,6 @@ export default function InventoryPage() {
 
   const products = productData?.data ?? [];
 
-  /*
-   * Inventory movements
-   *
-   * IMPORTANT:
-   * The backend accepts:
-   *
-   * page
-   * limit
-   * productId
-   * type
-   *
-   * It does NOT accept a search parameter.
-   */
   const {
     data: movementData,
     isLoading: movementsLoading,
@@ -78,13 +66,20 @@ export default function InventoryPage() {
     type: type === "ALL" ? undefined : type,
   });
 
-  /*
-   * Reset pagination whenever a filter changes.
-   */
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setPage(1);
-  }, [productId, type]);
+  const createMovement = useCreateStockMovement();
+
+  const canManageInventory =
+    user?.role === "ADMIN" || user?.role === "WAREHOUSE";
+
+  //   function handleProductChange(value: string) {
+  //     setProductId(value);
+  //     setPage(1);
+  //   }
+
+  //   function handleTypeChange(value: "ALL" | MovementType) {
+  //     setType(value);
+  //     setPage(1);
+  //   }
 
   function resetFilters() {
     setProductId("ALL");
@@ -97,13 +92,22 @@ export default function InventoryPage() {
     refetchMovements();
   }
 
+  function handleMovementSubmit(values: StockMovementFormValues) {
+    createMovement.mutate(values, {
+      onSuccess: () => {
+        setShowMovementForm(false);
+
+        refetchProducts();
+        refetchMovements();
+      },
+    });
+  }
+
   const isLoading = productsLoading || movementsLoading;
 
   return (
     <PageContainer>
-      {/* -------------------------------------------------- */}
       {/* PAGE HEADER */}
-      {/* -------------------------------------------------- */}
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
@@ -122,17 +126,58 @@ export default function InventoryPage() {
           </p>
         </div>
 
-        <Button variant="outline" onClick={handleRefresh} disabled={isLoading}>
-          <RefreshCw
-            className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
-          />
-          Refresh
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant="outline"
+            onClick={handleRefresh}
+            disabled={isLoading}
+          >
+            <RefreshCw
+              className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
+            />
+            Refresh
+          </Button>
+
+          {canManageInventory && (
+            <Button onClick={() => setShowMovementForm((current) => !current)}>
+              <Plus className="mr-2 h-4 w-4" />
+              Stock Movement
+            </Button>
+          )}
+        </div>
       </div>
 
-      {/* -------------------------------------------------- */}
+      {/* STOCK MOVEMENT FORM */}
+
+      {showMovementForm && canManageInventory && (
+        <section className="mt-6 rounded-xl border border-slate-200 bg-white shadow-sm">
+          <div className="border-b border-slate-200 px-5 py-4">
+            <h3 className="font-semibold text-slate-900">
+              Record Stock Movement
+            </h3>
+
+            <p className="mt-1 text-sm text-slate-500">
+              Record stock entering or leaving the warehouse.
+            </p>
+          </div>
+
+          <div className="p-5">
+            <StockMovementForm
+              products={products}
+              isSubmitting={createMovement.isPending}
+              serverError={
+                createMovement.error
+                  ? getErrorMessage(createMovement.error)
+                  : undefined
+              }
+              onSubmit={handleMovementSubmit}
+              onCancel={() => setShowMovementForm(false)}
+            />
+          </div>
+        </section>
+      )}
+
       {/* CURRENT INVENTORY */}
-      {/* -------------------------------------------------- */}
 
       <section className="mt-8">
         <div className="mb-4 flex items-center gap-2">
@@ -162,9 +207,7 @@ export default function InventoryPage() {
         )}
       </section>
 
-      {/* -------------------------------------------------- */}
       {/* MOVEMENT HISTORY */}
-      {/* -------------------------------------------------- */}
 
       <section className="mt-8">
         <div className="mb-4 flex items-center gap-2">
@@ -181,8 +224,6 @@ export default function InventoryPage() {
           </div>
         </div>
 
-        {/* Filters */}
-
         <InventoryFilters
           products={products}
           productId={productId}
@@ -191,8 +232,6 @@ export default function InventoryPage() {
           onTypeChange={setType}
           onReset={resetFilters}
         />
-
-        {/* Movement table */}
 
         <div className="mt-4">
           {movementsLoading ? (
@@ -226,10 +265,6 @@ export default function InventoryPage() {
   );
 }
 
-/* ====================================================== */
-/* LOADING STATE */
-/* ====================================================== */
-
 function TableSkeleton() {
   return (
     <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
@@ -252,10 +287,6 @@ function TableSkeleton() {
     </div>
   );
 }
-
-/* ====================================================== */
-/* ERROR STATE */
-/* ====================================================== */
 
 function ErrorState({
   title,
@@ -283,10 +314,6 @@ function ErrorState({
   );
 }
 
-/* ====================================================== */
-/* ERROR MESSAGE */
-/* ====================================================== */
-
 function getErrorMessage(error: unknown): string {
   if (error && typeof error === "object" && "response" in error) {
     const axiosError = error as {
@@ -298,9 +325,30 @@ function getErrorMessage(error: unknown): string {
       };
     };
 
+    if (axiosError.response?.status === 409) {
+      return (
+        axiosError.response.data?.message ??
+        "Insufficient stock for this movement."
+      );
+    }
+
+    if (axiosError.response?.status === 403) {
+      return (
+        axiosError.response.data?.message ??
+        "You do not have permission to record stock movements."
+      );
+    }
+
+    if (axiosError.response?.status === 404) {
+      return (
+        axiosError.response.data?.message ??
+        "The selected product could not be found."
+      );
+    }
+
     return (
       axiosError.response?.data?.message ??
-      "The server returned an unexpected error."
+      "Unable to record the stock movement."
     );
   }
 
