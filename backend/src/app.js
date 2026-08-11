@@ -31,6 +31,14 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.get("/", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "FundsRoom API is running",
+    environment: env.nodeEnv,
+  });
+});
+
 // API routes
 app.use("/api/auth", authRoutes);
 app.use("/api/test", testRoutes);
