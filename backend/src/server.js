@@ -6,9 +6,10 @@ const { connectDatabase, disconnectDatabase } = require("./config/database");
 const startServer = async () => {
   await connectDatabase();
 
-  const server = app.listen(env.port, () => {
-    console.log(`FundsRoom API running on http://localhost:${env.port}`);
+  const PORT = process.env.PORT || env.port || 5000;
 
+  const server = app.listen(PORT, "0.0.0.0", () => {
+    console.log(`FundsRoom API running on port ${PORT}`);
     console.log(`Environment: ${env.nodeEnv}`);
   });
 
