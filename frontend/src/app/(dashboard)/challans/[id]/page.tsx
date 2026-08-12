@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, FileText } from "lucide-react";
+import { ArrowLeft, Download, FileText } from "lucide-react";
 
 import { useParams, useRouter } from "next/navigation";
 
@@ -13,12 +13,13 @@ import { Button } from "@/components/ui/button";
 
 import { useAuth } from "@/hooks/useAuth";
 
-
 import {
   useCancelChallan,
   useChallan,
   useConfirmChallan,
 } from "@/hooks/useChallans";
+
+import { downloadChallanPdf } from "@/lib/pdf/challanPdf";
 
 export default function ChallanDetailsPage() {
   const params = useParams();
@@ -31,10 +32,15 @@ export default function ChallanDetailsPage() {
   const { data: challan, isLoading, isError, error, refetch } = useChallan(id);
 
   const confirmChallan = useConfirmChallan();
-
   const cancelChallan = useCancelChallan();
 
   const canManage = user?.role === "ADMIN" || user?.role === "SALES";
+
+  /*
+   * ============================================================
+   * CONFIRM CHALLAN
+   * ============================================================
+   */
 
   function handleConfirm() {
     if (!challan) {
@@ -51,6 +57,12 @@ export default function ChallanDetailsPage() {
 
     confirmChallan.mutate(challan.id);
   }
+
+  /*
+   * ============================================================
+   * CANCEL CHALLAN
+   * ============================================================
+   */
 
   function handleCancel() {
     if (!challan) {
@@ -71,6 +83,12 @@ export default function ChallanDetailsPage() {
     cancelChallan.mutate(challan.id);
   }
 
+  /*
+   * ============================================================
+   * LOADING STATE
+   * ============================================================
+   */
+
   if (isLoading) {
     return (
       <PageContainer>
@@ -79,10 +97,16 @@ export default function ChallanDetailsPage() {
     );
   }
 
+  /*
+   * ============================================================
+   * ERROR STATE
+   * ============================================================
+   */
+
   if (isError || !challan) {
     return (
       <PageContainer>
-        <div className="rounded-xl border border-red-200 bg-red-50 p-6">
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-6">
           <h2 className="font-semibold text-red-900">Unable to load challan</h2>
 
           <p className="mt-1 text-sm text-red-700">{getErrorMessage(error)}</p>
@@ -105,9 +129,17 @@ export default function ChallanDetailsPage() {
     );
   }
 
+  /*
+   * ============================================================
+   * CHALLAN DETAILS PAGE
+   * ============================================================
+   */
+
   return (
     <PageContainer>
-      {/* Header */}
+      {/* ========================================================
+          PAGE HEADER
+      ========================================================= */}
 
       <div className="mb-6">
         <Button
@@ -121,13 +153,17 @@ export default function ChallanDetailsPage() {
         </Button>
 
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          {/* Challan information */}
+
           <div className="flex items-start gap-3">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-900 text-white">
               <FileText className="h-5 w-5" />
             </div>
 
             <div>
-              <p className="text-sm font-medium text-slate-500">Sales</p>
+              <p className="text-sm font-medium text-slate-500">
+                Sales / Dispatch
+              </p>
 
               <h1 className="text-2xl font-bold tracking-tight text-slate-950">
                 {challan.challanNumber}
@@ -139,18 +175,52 @@ export default function ChallanDetailsPage() {
             </div>
           </div>
 
-          <ChallanActions
-            status={challan.status}
-            canManage={canManage}
-            isConfirming={confirmChallan.isPending}
-            isCancelling={cancelChallan.isPending}
-            onConfirm={handleConfirm}
-            onCancel={handleCancel}
-          />
+          {/* ====================================================
+              DOCUMENT + CHALLAN ACTIONS
+          ==================================================== */}
+
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Download Challan */}
+
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => downloadChallanPdf(challan)}
+            >
+              <Download className="mr-2 h-4 w-4" />
+              Download Challan PDF
+            </Button>
+
+            {/* Generate Invoice */}
+
+            {challan.status === "CONFIRMED" && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => router.push(`/invoices/${challan.id}`)}
+              >
+                <FileText className="mr-2 h-4 w-4" />
+                Generate Invoice
+              </Button>
+            )}
+
+            {/* Confirm / Cancel */}
+
+            <ChallanActions
+              status={challan.status}
+              canManage={canManage}
+              isConfirming={confirmChallan.isPending}
+              isCancelling={cancelChallan.isPending}
+              onConfirm={handleConfirm}
+              onCancel={handleCancel}
+            />
+          </div>
         </div>
       </div>
 
-      {/* Mutation error */}
+      {/* ========================================================
+          MUTATION ERROR
+      ========================================================= */}
 
       {(confirmChallan.isError || cancelChallan.isError) && (
         <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4">
@@ -168,16 +238,63 @@ export default function ChallanDetailsPage() {
         </div>
       )}
 
+      {/* ========================================================
+          CHALLAN DOCUMENT
+      ========================================================= */}
+
       <ChallanDetails challan={challan} />
+
+      {/* ========================================================
+          DOCUMENT INFORMATION
+      ========================================================= */}
+
+      <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="flex items-start gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-100">
+            <FileText className="h-5 w-5 text-slate-700" />
+          </div>
+
+          <div>
+            <p className="text-sm font-bold text-slate-950">Sales Challan</p>
+
+            <p className="mt-1 text-sm leading-6 text-slate-500">
+              This document records the dispatch of products to the customer.
+              The{" "}
+              <span className="font-semibold text-slate-700">
+                Download Challan PDF
+              </span>{" "}
+              button above downloads this challan as a PDF receipt.
+            </p>
+
+            {challan.status === "CONFIRMED" && (
+              <p className="mt-2 text-sm leading-6 text-slate-500">
+                Since this challan is confirmed, you can also generate a
+                separate{" "}
+                <span className="font-semibold text-slate-700">
+                  Tax Invoice
+                </span>
+                .
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
     </PageContainer>
   );
 }
+
+/*
+ * ================================================================
+ * LOADING SKELETON
+ * ================================================================
+ */
 
 function DetailsSkeleton() {
   return (
     <div className="space-y-6">
       <div>
         <div className="h-5 w-32 animate-pulse rounded bg-slate-200" />
+
         <div className="mt-3 h-8 w-48 animate-pulse rounded bg-slate-200" />
       </div>
 
@@ -187,11 +304,18 @@ function DetailsSkeleton() {
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="h-24 animate-pulse rounded-xl bg-white" />
+
         <div className="h-24 animate-pulse rounded-xl bg-white" />
       </div>
     </div>
   );
 }
+
+/*
+ * ================================================================
+ * ERROR HANDLING
+ * ================================================================
+ */
 
 function getErrorMessage(error: unknown): string {
   if (error && typeof error === "object" && "response" in error) {

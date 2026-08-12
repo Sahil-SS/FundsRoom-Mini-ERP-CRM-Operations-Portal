@@ -1,13 +1,10 @@
 "use client";
 
-import { CalendarDays, Download, UserRound } from "lucide-react";
+import { CalendarDays, UserRound } from "lucide-react";
 
 import type { Challan } from "@/types/challan";
 
 import ChallanStatusBadge from "@/components/challans/ChallanStatusBadge";
-import { Button } from "@/components/ui/button";
-
-import { downloadChallanPdf } from "@/lib/pdf/challanPdf";
 
 interface ChallanDetailsProps {
   challan: Challan;
@@ -53,15 +50,6 @@ export default function ChallanDetails({ challan }: ChallanDetailsProps) {
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => downloadChallanPdf(challan)}
-              >
-                <Download className="mr-2 h-4 w-4" />
-                Download PDF
-              </Button>
-
               <ChallanStatusBadge status={challan.status} />
             </div>
           </div>
